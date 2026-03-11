@@ -1,0 +1,8 @@
+flask
+werkzeug
+flask-cors
+pdfplumber
+python-docx
+google-generativeai
+python-dotenv
+protobuf>=5.26.1

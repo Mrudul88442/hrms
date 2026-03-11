@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HRMS AI Resume Scoring Platform</title>
+    <!-- Modern Web Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Local CSS -->
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo-area">
+                <i class="fa-solid fa-layer-group"></i>
+                <h2>HRMS<span>.ai</span></h2>
+            </div>
+            <nav class="nav-menu">
+                <a href="#" class="active"><i class="fa-solid fa-chart-pie"></i> Dashboard</a>
+                <a href="#"><i class="fa-solid fa-users"></i> Candidates</a>
+                <a href="#"><i class="fa-solid fa-briefcase"></i> Jobs</a>
+                <a href="#"><i class="fa-solid fa-cog"></i> Settings</a>
+            </nav>
+            <div class="user-profile">
+                <img src="https://ui-avatars.com/api/?name=HR+Admin&background=0D8ABC&color=fff" alt="User Profile">
+                <div class="user-info">
+                    <h4>HR Admin</h4>
+                    <p>admin@hrms.ai</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-header">
+                <div class="header-title">
+                    <h1>AI Resume Screening</h1>
+                    <p>Leverage Gemini AI to find the perfect candidate match automatically.</p>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-outline"><i class="fa-solid fa-bell"></i></button>
+                </div>
+            </header>
+
+            <div class="content-grid">
+                <!-- Data Entry Section -->
+                <div class="input-section card">
+                    <h3><i class="fa-solid fa-pen-to-square"></i> Create New Scoring Job</h3>
+                    
+                    <div class="form-group">
+                        <label for="jobDescription">Job Description (JD)</label>
+                        <textarea id="jobDescription" placeholder="Paste the full job description here, including responsibilities, required skills, and qualifications..." rows="6"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Upload Resumes (PDF / DOCX)</label>
+                        <div class="upload-zone" id="dropZone">
+                            <input type="file" id="fileInput" multiple accept=".pdf,.doc,.docx" hidden>
+                            <i class="fa-solid fa-cloud-arrow-up cloud-icon"></i>
+                            <h4>Drag & Drop Resumes Here</h4>
+                            <p>or <button type="button" class="btn-text" id="browseBtn">browse files</button> from your computer</p>
+                            <div class="file-list" id="fileList"></div>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-primary btn-block" id="analyzeBtn">
+                        <i class="fa-solid fa-microchip"></i> Start AI Analysis
+                    </button>
+                    <!-- Global Error Container -->
+                    <div id="errorMessage" class="error-msg hidden"></div>
+                </div>
+
+                <!-- Results Section -->
+                <div class="results-section card">
+                    <div class="results-header">
+                        <h3><i class="fa-solid fa-ranking-star"></i> Candidate Rankings</h3>
+                        <button class="btn btn-secondary btn-sm" id="exportBtn" disabled>
+                            <i class="fa-solid fa-download"></i> Export CSV
+                        </button>
+                    </div>
+
+                    <div class="table-container">
+                        <table class="candidates-table" id="resultsTable">
+                            <thead>
+                                <tr>
+                                    <th>Rank</th>
+                                    <th>Candidate</th>
+                                    <th>Skills Match</th>
+                                    <th>Overall Score</th>
+                                    <th>Recommendation</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="resultsTableBody">
+                                <!-- Empty state -->
+                                <tr class="empty-state">
+                                    <td colspan="6">
+                                        <div class="empty-content">
+                                            <i class="fa-regular fa-folder-open"></i>
+                                            <p>No candidates analyzed yet. Upload resumes and run the analysis.</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Candidate Details Modal -->
+    <div class="modal hidden" id="candidateModal">
+        <div class="modal-overlay" id="modalOverlay"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="mName">Candidate Name</h2>
+                <button class="close-btn" id="closeModal"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="m-profile-header">
+                    <div class="m-badge" id="mRecommendation">Strong Hire</div>
+                    <div class="m-final-score">
+                        <span id="mFinalScore">95</span><span class="muted">/100</span>
+                    </div>
+                </div>
+                
+                <div class="m-contact">
+                    <p><i class="fa-regular fa-envelope"></i> <span id="mEmail">email@example.com</span></p>
+                </div>
+
+                <div class="m-grid">
+                    <div class="m-card">
+                        <h4><i class="fa-solid fa-chart-line"></i> Sub-Scores</h4>
+                        <div class="progress-item">
+                            <label>Skills Match <span id="mSkillsScore">0</span>%</label>
+                            <div class="progress-bar"><div class="progress-fill" id="mSkillsFill"></div></div>
+                        </div>
+                        <div class="progress-item">
+                            <label>Experience <span id="mExpScore">0</span>%</label>
+                            <div class="progress-bar"><div class="progress-fill" id="mExpFill"></div></div>
+                        </div>
+                        <div class="progress-item">
+                            <label>Education <span id="mEduScore">0</span>%</label>
+                            <div class="progress-bar"><div class="progress-fill" id="mEduFill"></div></div>
+                        </div>
+                    </div>
+
+                    <div class="m-card">
+                        <h4><i class="fa-solid fa-brain"></i> AI Summary</h4>
+                        <p id="mSummary" class="text-summary">Loading summary...</p>
+                    </div>
+                </div>
+
+                <div class="m-details">
+                    <div class="m-detail-item">
+                        <h4><i class="fa-solid fa-screwdriver-wrench"></i> Extracted Skills</h4>
+                        <div class="skills-tags" id="mSkillsList">
+                            <!-- Tags injected via JS -->
+                        </div>
+                    </div>
+                    <div class="m-detail-item">
+                        <h4><i class="fa-solid fa-briefcase"></i> Experience</h4>
+                        <p id="mExperience">...</p>
+                    </div>
+                    <div class="m-detail-item">
+                        <h4><i class="fa-solid fa-graduation-cap"></i> Education</h4>
+                        <p id="mEducation">...</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" id="modalCloseBtn">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fullscreen Loading Overlay -->
+    <div class="loader-overlay hidden" id="loaderOverlay">
+        <div class="loader-content">
+            <div class="spinner"></div>
+            <h3>Analyzing Resumes...</h3>
+            <p>Our AI is crunching the data. This might take a few moments depending on the number of resumes.</p>
+        </div>
+    </div>
+
+    <script src="/static/js/main.js"></script>
+</body>
+</html>
