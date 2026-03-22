@@ -11,6 +11,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const resultsTableBody = document.getElementById('resultsTableBody');
     const exportBtn = document.getElementById('exportBtn');
     
+    // View Switching Elements
+    const allCandidatesTableBody = document.getElementById('allCandidatesTableBody');
+    let allCandidatesData = [];
+    
     // Modal Elements
     const candidateModal = document.getElementById('candidateModal');
     const modalOverlay = document.getElementById('modalOverlay');
@@ -20,39 +24,109 @@ document.addEventListener('DOMContentLoaded', () => {
     let selectedFiles = [];
     let processingResults = [];
 
-    // Setup Event Listeners
-    browseBtn.addEventListener('click', () => fileInput.click());
-    
-    fileInput.addEventListener('change', (e) => {
-        handleFiles(e.target.files);
-    });
-
-    // Drag and drop setup
-    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-        dropZone.addEventListener(eventName, preventDefaults, false);
-    });
-
-    function preventDefaults(e) {
-        e.preventDefault();
-        e.stopPropagation();
+    // Automatically load candidates if we are on the candidates page
+    if (allCandidatesTableBody) {
+        loadAllCandidates();
     }
 
-    ['dragenter', 'dragover'].forEach(eventName => {
-        dropZone.addEventListener(eventName, () => {
-            dropZone.classList.add('dragover');
-        });
-    });
+    async function loadAllCandidates() {
+        try {
+            const response = await fetch('/api/candidates');
+            const data = await response.json();
+            if (response.ok && data.success) {
+                allCandidatesData = data.candidates;
+                renderAllCandidates();
+            } else {
+                console.error("Failed to fetch candidates:", data.error);
+            }
+        } catch (err) {
+            console.error(err);
+        }
+    }
 
-    ['dragleave', 'drop'].forEach(eventName => {
-        dropZone.addEventListener(eventName, () => {
-            dropZone.classList.remove('dragover');
-        });
-    });
+    function renderAllCandidates() {
+        if (allCandidatesData.length === 0) {
+            allCandidatesTableBody.innerHTML = `
+                <tr class="empty-state">
+                    <td colspan="5">
+                        <div class="empty-content">
+                            <i class="fa-regular fa-folder-open"></i>
+                            <p>No candidates available. Go to Dashboard and run an analysis.</p>
+                        </div>
+                    </td>
+                </tr>`;
+            return;
+        }
 
-    dropZone.addEventListener('drop', (e) => {
-        const droppedFiles = e.dataTransfer.files;
-        handleFiles(droppedFiles);
-    });
+        allCandidatesTableBody.innerHTML = allCandidatesData.map((result, index) => {
+            let recClass = '';
+            if (result.recommendation === "Strong Hire") recClass = 'strong';
+            else if (result.recommendation === "Consider") recClass = 'consider';
+            else if (result.recommendation === "Borderline") recClass = 'borderline';
+            else recClass = 'reject';
+
+            return `
+                <tr>
+                    <td>
+                        <span class="candidate-name">${result.name}</span>
+                        <span class="candidate-email">${result.email}</span>
+                    </td>
+                    <td>${result.skills_score}%</td>
+                    <td><strong>${result.final_score}</strong>/100</td>
+                    <td><span class="rec-badge ${recClass}">${result.recommendation}</span></td>
+                    <td>
+                        <button class="btn btn-outline btn-sm view-db-details" data-index="${index}">
+                            View Details
+                        </button>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+
+        // Attach listeners
+        document.querySelectorAll('.view-db-details').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const index = e.target.closest('button').getAttribute('data-index');
+                openModal(allCandidatesData[index]);
+            });
+        });
+    }
+
+    // Setup Event Listeners for Dashboard
+    if (browseBtn && fileInput && dropZone && analyzeBtn) {
+        browseBtn.addEventListener('click', () => fileInput.click());
+        
+        fileInput.addEventListener('change', (e) => {
+            handleFiles(e.target.files);
+        });
+
+        // Drag and drop setup
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, () => {
+                dropZone.classList.add('dragover');
+            });
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, () => {
+                dropZone.classList.remove('dragover');
+            });
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            const droppedFiles = e.dataTransfer.files;
+            handleFiles(droppedFiles);
+        });
+    }
 
     function handleFiles(files) {
         for (let i = 0; i < files.length; i++) {
@@ -105,52 +179,54 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Analyze Action
-    analyzeBtn.addEventListener('click', async () => {
-        const jdText = jobDescription.value.trim();
-        if (!jdText) {
-            showError("Please enter a Job Description.");
-            return;
-        }
+    if (analyzeBtn) {
+        analyzeBtn.addEventListener('click', async () => {
+            const jdText = jobDescription.value.trim();
+            if (!jdText) {
+                showError("Please enter a Job Description.");
+                return;
+            }
 
-        if (selectedFiles.length === 0) {
-            showError("Please upload at least one resume.");
-            return;
-        }
+            if (selectedFiles.length === 0) {
+                showError("Please upload at least one resume.");
+                return;
+            }
 
-        const formData = new FormData();
-        formData.append('job_description', jdText);
-        selectedFiles.forEach(file => {
-            formData.append('resumes', file);
-        });
-
-        loaderOverlay.classList.remove('hidden');
-        errorMessage.classList.add('hidden');
-
-        try {
-            const response = await fetch('/api/analyze', {
-                method: 'POST',
-                body: formData
+            const formData = new FormData();
+            formData.append('job_description', jdText);
+            selectedFiles.forEach(file => {
+                formData.append('resumes', file);
             });
 
-            const data = await response.json();
+            loaderOverlay.classList.remove('hidden');
+            errorMessage.classList.add('hidden');
 
-            if (!response.ok) {
-                throw new Error(data.error || "Failed to analyze resumes.");
+            try {
+                const response = await fetch('/api/analyze', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || "Failed to analyze resumes.");
+                }
+
+                processingResults = data.results;
+                renderResults();
+                
+                if (processingResults.length > 0) {
+                    exportBtn.disabled = false;
+                }
+
+            } catch (error) {
+                showError(error.message);
+            } finally {
+                loaderOverlay.classList.add('hidden');
             }
-
-            processingResults = data.results;
-            renderResults();
-            
-            if (processingResults.length > 0) {
-                exportBtn.disabled = false;
-            }
-
-        } catch (error) {
-            showError(error.message);
-        } finally {
-            loaderOverlay.classList.add('hidden');
-        }
-    });
+        });
+    }
 
     // Render Table
     function renderResults() {
@@ -276,33 +352,36 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // CSV Export
-    exportBtn.addEventListener('click', () => {
-        if (processingResults.length === 0) return;
+    if (exportBtn) {
+        exportBtn.addEventListener('click', () => {
+            if (processingResults.length === 0) return;
+            // ...
+    // Note: To preserve previous code logic simply put:
+            const headers = ["Rank", "Name", "Email", "Final Score", "Skills Score", "Experience Score", "Education Score", "Recommendation"];
+            const validResults = processingResults.filter(r => !r.error);
+            
+            const rows = validResults.map(r => [
+                r.rank,
+                `"${r.name}"`,
+                `"${r.email}"`,
+                r.final_score,
+                r.skills_score,
+                r.experience_score,
+                r.education_score,
+                `"${r.recommendation}"`
+            ]);
 
-        const headers = ["Rank", "Name", "Email", "Final Score", "Skills Score", "Experience Score", "Education Score", "Recommendation"];
-        const validResults = processingResults.filter(r => !r.error);
-        
-        const rows = validResults.map(r => [
-            r.rank,
-            `"${r.name}"`,
-            `"${r.email}"`,
-            r.final_score,
-            r.skills_score,
-            r.experience_score,
-            r.education_score,
-            `"${r.recommendation}"`
-        ]);
+            let csvContent = "data:text/csv;charset=utf-8," 
+                + headers.join(",") + "\n"
+                + rows.map(e => e.join(",")).join("\n");
 
-        let csvContent = "data:text/csv;charset=utf-8," 
-            + headers.join(",") + "\n"
-            + rows.map(e => e.join(",")).join("\n");
-
-        const encodedUri = encodeURI(csvContent);
-        const link = document.createElement("a");
-        link.setAttribute("href", encodedUri);
-        link.setAttribute("download", "HR_AI_Resume_Scores.csv");
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    });
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "HR_AI_Resume_Scores.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        });
+    }
 });

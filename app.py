@@ -1,4 +1,5 @@
 import os
+import sqlite3
 from flask import Flask, request, jsonify, render_template, send_file
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
@@ -26,9 +27,26 @@ def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+def init_db():
+    conn = sqlite3.connect('database.db')
+    c = conn.cursor()
+    c.execute('''CREATE TABLE IF NOT EXISTS candidates 
+                 (id INTEGER PRIMARY KEY AUTOINCREMENT, 
+                  name TEXT, email TEXT, skills TEXT, 
+                  education TEXT, experience TEXT, 
+                  skills_score REAL, experience_score REAL, 
+                  education_score REAL, final_score REAL, 
+                  recommendation TEXT, summary TEXT)''')
+    conn.commit()
+    conn.close()
+
 @app.route('/')
 def index():
     return render_template('index.html')
+
+@app.route('/candidates')
+def candidates_page():
+    return render_template('candidates.html')
 
 @app.route('/api/analyze', methods=['POST'])
 def analyze_resumes():
@@ -93,6 +111,33 @@ def analyze_resumes():
                         "filename": filename,
                         **scored_result
                     }
+                    
+                    # Save into DB
+                    try:
+                        conn = sqlite3.connect('database.db')
+                        c = conn.cursor()
+                        c.execute('''INSERT INTO candidates 
+                                     (name, email, skills, education, experience, 
+                                      skills_score, experience_score, education_score, 
+                                      final_score, recommendation, summary) 
+                                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+                                  (scored_result.get('name', 'Unknown'),
+                                   scored_result.get('email', 'Not Provided'),
+                                   scored_result.get('skills', ''),
+                                   scored_result.get('education', ''),
+                                   scored_result.get('experience', ''),
+                                   scored_result.get('skills_score', 0),
+                                   scored_result.get('experience_score', 0),
+                                   scored_result.get('education_score', 0),
+                                   scored_result.get('final_score', 0),
+                                   scored_result.get('recommendation', ''),
+                                   scored_result.get('summary', '')))
+                        result['id'] = c.lastrowid
+                        conn.commit()
+                        conn.close()
+                    except Exception as db_e:
+                        print(f"Database insertion error: {db_e}")
+
                     results.append(result)
                     
                 except Exception as e:
@@ -139,6 +184,37 @@ def analyze_resumes():
         print(traceback.format_exc())
         return jsonify({"error": f"Internal server error: {str(e)}"}), 500
 
+@app.route('/api/candidates', methods=['GET'])
+def get_candidates():
+    try:
+        conn = sqlite3.connect('database.db')
+        conn.row_factory = sqlite3.Row
+        c = conn.cursor()
+        c.execute('SELECT * FROM candidates ORDER BY final_score DESC')
+        rows = c.fetchall()
+        
+        candidates = []
+        for r in rows:
+            candidates.append({
+                "id": r["id"],
+                "name": r["name"],
+                "email": r["email"],
+                "skills": r["skills"],
+                "education": r["education"],
+                "experience": r["experience"],
+                "skills_score": r["skills_score"],
+                "experience_score": r["experience_score"],
+                "education_score": r["education_score"],
+                "final_score": r["final_score"],
+                "recommendation": r["recommendation"],
+                "summary": r["summary"]
+            })
+        conn.close()
+        return jsonify({"success": True, "candidates": candidates})
+    except Exception as e:
+        print(f"Error fetching candidates: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
 @app.route('/api/export', methods=['POST'])
 def export_results():
     try:
@@ -165,4 +241,5 @@ if __name__ == '__main__':
     os.makedirs('templates', exist_ok=True)
     os.makedirs('services', exist_ok=True)
     
+    init_db()
     app.run(debug=True, port=5000)

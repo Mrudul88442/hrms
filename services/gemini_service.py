@@ -16,13 +16,15 @@ def analyze_resume_with_gemini(resume_text, job_description):
     try:
         setup_gemini()
         
-        # Using gemini-1.5-flash for fast and cost-effective text tasks
-        model = genai.GenerativeModel("gemini-1.5-flash")
+        # Try to use generation_config to force JSON response
+        model = genai.GenerativeModel("gemini-2.5-flash", 
+                                      generation_config={"response_mime_type": "application/json"})
         
         prompt = f'''
 You are an expert HR Associate and AI resume evaluator. 
 Your task is to analyze the provided Candidate Resume and evaluate it against the given Job Description.
-Extract the following candidate details and provide an evaluation. Wait, you must output your response STRICTLY as valid JSON without any markdown formatting wrappers (like ```json ... ```) so it can be parsed directly.
+Extract the following candidate details and provide an evaluation. 
+Wait, you must output your response STRICTLY as valid JSON without any markdown formatting wrappers (like ```json ... ```) so it can be parsed directly.
 
 Job Description:
 {job_description}
@@ -40,29 +42,25 @@ JSON Format Required:
     "skills": ["Skill 1", "Skill 2", "Skill 3"]
   }},
   "evaluation": {{
-    "skills_match_score": <number between 0 and 100 based on matching skills from JD>,
-    "experience_score": <number between 0 and 100 based on relevant job history>,
-    "education_score": <number between 0 and 100 based on relevant degrees>,
+    "skills_match_score": 85,
+    "experience_score": 70,
+    "education_score": 90,
     "summary": "A 2-3 sentence summary of why this candidate is or isn't a fit."
   }}
 }}
 
-Output ONLY the JSON object.
+Ensure scores are numeric values, not string variables. Output ONLY the JSON object.
 '''
 
         response = model.generate_content(prompt)
         text = response.text.strip()
         
-        # Strip markdown syntax if Gemini ignores the instruction
-        if text.startswith("```json"):
-            text = text[7:]
-        if text.startswith("```"):
-            text = text[3:]
-        if text.endswith("```"):
-            text = text[:-3]
+        # Use regex to find the JSON block in case there's any surrounding text
+        import re
+        json_match = re.search(r'(\{[\s\S]*\})', text)
+        if json_match:
+            text = json_match.group(1)
             
-        text = text.strip()
-        
         result = json.loads(text)
         return result
         

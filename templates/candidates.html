@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HRMS AI Resume Scoring Platform</title>
+    <title>Candidates - HRMS AI</title>
     <!-- Modern Web Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -11,7 +11,7 @@
     <!-- FontAwesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Local CSS -->
-    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="/static/css/style.css?v=3">
 </head>
 <body>
     <div class="app-container">
@@ -22,8 +22,8 @@
                 <h2>HRMS<span>.ai</span></h2>
             </div>
             <nav class="nav-menu">
-                <a href="/" class="active"><i class="fa-solid fa-chart-pie"></i> Dashboard</a>
-                <a href="/candidates"><i class="fa-solid fa-users"></i> Candidates</a>
+                <a href="/"><i class="fa-solid fa-chart-pie"></i> Dashboard</a>
+                <a href="/candidates" class="active"><i class="fa-solid fa-users"></i> Candidates</a>
                 <a href="#"><i class="fa-solid fa-briefcase"></i> Jobs</a>
                 <a href="#"><i class="fa-solid fa-cog"></i> Settings</a>
             </nav>
@@ -40,56 +40,24 @@
         <main class="main-content">
             <header class="top-header">
                 <div class="header-title">
-                    <h1>AI Resume Screening</h1>
-                    <p>Leverage Gemini AI to find the perfect candidate match automatically.</p>
+                    <h1>Analyzed Candidates</h1>
+                    <p>Review the historical list of all candidates processed by the system.</p>
                 </div>
                 <div class="header-actions">
                     <button class="btn btn-outline"><i class="fa-solid fa-bell"></i></button>
                 </div>
             </header>
 
-            <div class="content-grid">
-                <!-- Data Entry Section -->
-                <div class="input-section card">
-                    <h3><i class="fa-solid fa-pen-to-square"></i> Create New Scoring Job</h3>
-                    
-                    <div class="form-group">
-                        <label for="jobDescription">Job Description (JD)</label>
-                        <textarea id="jobDescription" placeholder="Paste the full job description here, including responsibilities, required skills, and qualifications..." rows="6"></textarea>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Upload Resumes (PDF / DOCX)</label>
-                        <div class="upload-zone" id="dropZone">
-                            <input type="file" id="fileInput" multiple accept=".pdf,.doc,.docx" hidden>
-                            <i class="fa-solid fa-cloud-arrow-up cloud-icon"></i>
-                            <h4>Drag & Drop Resumes Here</h4>
-                            <p>or <button type="button" class="btn-text" id="browseBtn">browse files</button> from your computer</p>
-                            <div class="file-list" id="fileList"></div>
-                        </div>
-                    </div>
-
-                    <button class="btn btn-primary btn-block" id="analyzeBtn">
-                        <i class="fa-solid fa-microchip"></i> Start AI Analysis
-                    </button>
-                    <!-- Global Error Container -->
-                    <div id="errorMessage" class="error-msg hidden"></div>
-                </div>
-
-                <!-- Results Section -->
-                <div class="results-section card">
+            <div class="content-grid" style="grid-template-columns: 1fr;">
+                <div class="card" style="margin-top: 20px;">
                     <div class="results-header">
-                        <h3><i class="fa-solid fa-ranking-star"></i> Candidate Rankings</h3>
-                        <button class="btn btn-secondary btn-sm" id="exportBtn" disabled>
-                            <i class="fa-solid fa-download"></i> Export CSV
-                        </button>
+                        <h3><i class="fa-solid fa-users"></i> All Analyzed Candidates</h3>
                     </div>
 
                     <div class="table-container">
-                        <table class="candidates-table" id="resultsTable">
+                        <table class="candidates-table" id="allCandidatesTable">
                             <thead>
                                 <tr>
-                                    <th>Rank</th>
                                     <th>Candidate</th>
                                     <th>Skills Match</th>
                                     <th>Overall Score</th>
@@ -97,13 +65,12 @@
                                     <th>Action</th>
                                 </tr>
                             </thead>
-                            <tbody id="resultsTableBody">
-                                <!-- Empty state -->
+                            <tbody id="allCandidatesTableBody">
                                 <tr class="empty-state">
-                                    <td colspan="6">
+                                    <td colspan="5">
                                         <div class="empty-content">
                                             <i class="fa-regular fa-folder-open"></i>
-                                            <p>No candidates analyzed yet. Upload resumes and run the analysis.</p>
+                                            <p>Loading candidates data...</p>
                                         </div>
                                     </td>
                                 </tr>
@@ -181,15 +148,6 @@
         </div>
     </div>
 
-    <!-- Fullscreen Loading Overlay -->
-    <div class="loader-overlay hidden" id="loaderOverlay">
-        <div class="loader-content">
-            <div class="spinner"></div>
-            <h3>Analyzing Resumes...</h3>
-            <p>Our AI is crunching the data. This might take a few moments depending on the number of resumes.</p>
-        </div>
-    </div>
-
-    <script src="/static/js/main.js?v=2"></script>
+    <script src="/static/js/main.js?v=3"></script>
 </body>
 </html>
