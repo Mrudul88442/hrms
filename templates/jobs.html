@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Job Openings - HRMS.ai</title>
+    <!-- Modern Web Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Local CSS -->
+    <link rel="stylesheet" href="/static/css/style.css?v=3">
+    <style>
+        .copy-btn {
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--primary);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            padding: 0.5rem 0.75rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.8125rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+        }
+        .copy-btn:hover {
+            background: rgba(99, 102, 241, 0.2);
+        }
+        .copy-btn.copied {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+            border-color: rgba(16, 185, 129, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="logo-area">
+                <div class="logo-icon">
+                    <i class="fa-solid fa-layer-group"></i>
+                </div>
+                <h2>HRMS<span>.ai</span></h2>
+            </div>
+            
+            <nav class="nav-menu">
+                <a href="/dashboard"><i class="fa-solid fa-chart-pie"></i> <span>Dashboard</span></a>
+                <a href="/analyze"><i class="fa-solid fa-microchip"></i> <span>Analyze Resumes</span></a>
+                <a href="/candidates"><i class="fa-solid fa-users"></i> <span>Candidates</span></a>
+                <a href="/jobs" class="active"><i class="fa-solid fa-briefcase"></i> <span>Job Openings</span></a>
+                <a href="/settings"><i class="fa-solid fa-cog"></i> <span>Settings</span></a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="user-profile" style="position: relative; display: flex; align-items: center; justify-content: space-between; overflow: hidden; gap: 0.5rem; padding: 0.75rem;">
+                    <div style="display: flex; align-items: center; gap: 0.75rem; flex: 1; min-width: 0;">
+                        <img src="https://ui-avatars.com/api/?name={{ session.get('username', 'HR Admin') | urlencode }}&background=6366f1&color=fff" alt="User Profile" style="width: 36px; height: 36px; flex-shrink: 0;">
+                        <div class="user-info" style="min-width: 0; overflow: hidden;">
+                            <h4 style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 0.85rem;">{{ session.get('username', 'HR Admin') }}</h4>
+                            <p style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 0.75rem;">{{ session.get('email', 'admin@hrms.ai') }}</p>
+                        </div>
+                    </div>
+                    <a href="/logout" title="Log Out" style="color: var(--text-muted); transition: color 0.2s; display: flex; align-items: center; justify-content: center; text-decoration: none; flex-shrink: 0; padding: 4px;">
+                        <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                    </a>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Wrapper -->
+        <div class="main-wrapper" id="mainWrapper">
+            <!-- Top Navigation -->
+            <nav class="top-nav">
+                <div class="nav-left">
+                    <button class="icon-btn" id="sidebarToggle">
+                        <i class="fa-solid fa-bars-staggered"></i>
+                    </button>
+                </div>
+                
+                <div class="search-container">
+                    <div class="search-bar" id="globalSearchBar">
+                        <i class="fa-solid fa-search"></i>
+                        <i class="fa-solid fa-circle-notch fa-spin loading-spinner"></i>
+                        <input type="text" id="globalSearchInput" placeholder="Search candidates, jobs...">
+                    </div>
+                    <div class="search-results-dropdown" id="searchResults">
+                        <!-- Results will be injected here -->
+                    </div>
+                </div>
+                
+                <div class="nav-actions">
+                    <button class="icon-btn" id="themeToggle" title="Toggle Theme">
+                        <i class="fa-solid fa-moon"></i>
+                    </button>
+                    <div class="icon-btn">
+                        <i class="fa-solid fa-bell"></i>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- Main Content Area -->
+            <main class="main-content">
+                <header class="page-header animate-fade-in">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-end;">
+                        <div>
+                            <h1 style="font-family: var(--font-heading); font-size: 1.875rem; font-weight: 700;">Job Openings</h1>
+                            <p style="color: var(--text-muted); margin-bottom: 2rem;">Manage active roles and generate public application links.</p>
+                        </div>
+                        <div style="margin-bottom: 2rem;">
+                            <!-- Call the job modal existing on index.html, or we can build a new minimal implementation. -->
+                            <button class="btn btn-primary" onclick="document.getElementById('jobModal').classList.remove('hidden')">
+                                <i class="fa-solid fa-plus"></i> Create New Job
+                            </button>
+                        </div>
+                    </div>
+                </header>
+
+                <div class="table-card animate-fade-in">
+                    <div class="table-header">
+                        <h3><i class="fa-solid fa-briefcase"></i> Active Listings</h3>
+                    </div>
+
+                    <div class="table-container">
+                        <table class="modern-table">
+                            <thead>
+                                <tr>
+                                    <th>Job Title</th>
+                                    <th>Date Created</th>
+                                    <th>Applicants</th>
+                                    <th>Shareable Link</th>
+                                </tr>
+                            </thead>
+                            <tbody id="jobsTableBody">
+                                <tr class="empty-state">
+                                    <td colspan="4" style="text-align:center; padding: 5rem;">
+                                        <div class="empty-content" style="color:var(--text-muted);">
+                                            <i class="fa-solid fa-circle-notch fa-spin" style="font-size:2rem; margin-bottom:1rem;"></i>
+                                            <p>Loading jobs list...</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Create Job Modal -->
+    <div class="modal hidden" id="jobModal">
+        <div class="modal-overlay" id="jobModalOverlay" onclick="document.getElementById('jobModal').classList.add('hidden')"></div>
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header">
+                <h2>Create New Job Role</h2>
+                <button class="close-btn" onclick="document.getElementById('jobModal').classList.add('hidden')"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group" style="margin-bottom: 1rem;">
+                    <label style="display:block; font-weight:600; margin-bottom:0.5rem; color: var(--text-muted); font-size: 0.8rem;">Job Title</label>
+                    <input type="text" id="newJobTitle" placeholder="e.g. Senior Frontend Developer" style="width:100%; padding:0.75rem; border:1px solid var(--border); border-radius:10px; outline:none; background: transparent; color: var(--text-main);">
+                </div>
+                <div class="form-group" style="margin-bottom: 1rem;">
+                    <label style="display:block; font-weight:600; margin-bottom:0.5rem; color: var(--text-muted); font-size: 0.8rem;">Description / Requirements</label>
+                    <textarea id="newJobDescription" placeholder="Detailed job requirements..." rows="6" style="width:100%; padding:0.75rem; border:1px solid var(--border); border-radius:10px; outline:none; resize:vertical; background: transparent; color: var(--text-main); font-family: inherit;"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="document.getElementById('jobModal').classList.add('hidden')">Cancel</button>
+                <button class="btn btn-primary" id="saveJobBtnLocal">Create Job</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/main.js?v=4"></script>
+    <script>
+        // Local logic for jobs page fetching
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchJobsList();
+
+            document.getElementById('saveJobBtnLocal').addEventListener('click', async () => {
+                const title = document.getElementById('newJobTitle').value;
+                const desc = document.getElementById('newJobDescription').value;
+                if(!title || !desc) {
+                    alert("Please fill all fields.");
+                    return;
+                }
+                const btn = document.getElementById('saveJobBtnLocal');
+                btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Saving';
+                btn.disabled = true;
+
+                try {
+                    const res = await fetch('/api/jobs', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({title: title, description: desc})
+                    });
+                    if(res.ok) {
+                        document.getElementById('jobModal').classList.add('hidden');
+                        document.getElementById('newJobTitle').value = '';
+                        document.getElementById('newJobDescription').value = '';
+                        fetchJobsList();
+                    } else {
+                        alert("Error saving job.");
+                    }
+                } catch(e) {
+                    console.error(e);
+                } finally {
+                    btn.innerHTML = 'Create Job';
+                    btn.disabled = false;
+                }
+            });
+        });
+
+        async function fetchJobsList() {
+            try {
+                const res = await fetch('/api/jobs');
+                const data = await res.json();
+                
+                const tbody = document.getElementById('jobsTableBody');
+                if(!data.success || !data.jobs.length) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="4" style="text-align:center; padding: 4rem; color:var(--text-muted);">
+                                No jobs created yet. Click "Create New Job" to generate a shareable link.
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+
+                const host = window.location.origin;
+                tbody.innerHTML = data.jobs.map(job => {
+                    const publicLink = job.public_token ? `${host}/apply/${job.public_token}` : '';
+                    const urlString = publicLink ? `'${publicLink}'` : '';
+                    
+                    return `
+                        <tr>
+                            <td style="font-weight: 600;">${job.title}</td>
+                            <td><span style="color:var(--text-muted); font-size:0.875rem;">${new Date(job.created_at).toLocaleDateString()}</span></td>
+                            <td><span class="badge badge-info">${job.candidate_count || 0} Candidates</span></td>
+                            <td>
+                                ${publicLink ? 
+                                    `<button class="copy-btn" onclick="copyToClipboard(this, ${urlString})">
+                                        <i class="fa-regular fa-copy"></i> Copy Application Link
+                                    </button>` 
+                                    : `<span style="color:var(--text-muted); font-size:0.8rem;">(Old Job) Legacy Record</span>`
+                                }
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function copyToClipboard(btn, text) {
+            try {
+                await navigator.clipboard.writeText(text);
+                const originalHtml = btn.innerHTML;
+                btn.innerHTML = `<i class="fa-solid fa-check"></i> Copied!`;
+                btn.classList.add('copied');
+                
+                setTimeout(() => {
+                    btn.innerHTML = originalHtml;
+                    btn.classList.remove('copied');
+                }, 2000);
+            } catch (err) {
+                console.error('Failed to copy', err);
+            }
+        }
+    </script>
+</body>
+</html>

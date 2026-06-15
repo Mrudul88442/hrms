@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>hrms.ai — Your Workforce, Reimagined</title>
+    <meta name="description" content="The cinematic AI-powered HR platform for modern enterprises. Streamline hiring, analytics, and workforce management.">
+    <!-- Local CSS -->
+    <link rel="stylesheet" href="/static/css/landing.css">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Global Animated Background -->
+    <canvas id="bgCanvas"></canvas>
+    
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="grid-overlay"></div>
+
+    <header class="navbar">
+        <div class="logo reveal stagger-1">
+            <div class="logo-container">
+                <canvas id="logoCanvas"></canvas>
+                <div class="logo-dot"></div>
+            </div>
+            hrms<span>.ai</span>
+        </div>
+        <nav class="nav-links reveal stagger-2">
+            <a href="#features">Features</a>
+            <a href="#how-it-works">How it Works</a>
+            <a href="#testimonials">Clients</a>
+            <a href="#">Pricing</a>
+        </nav>
+        <div class="nav-buttons reveal stagger-3" style="display: flex; gap: 1rem; align-items: center;">
+            <button class="nav-cta" onclick="location.href='{% if session.get('user_id') %}/dashboard{% else %}/signup{% endif %}'">GET STARTED</button>
+            <button class="nav-cta" style="background: transparent; border: 1px solid rgba(0,0,0,0.1); color: var(--text-main); box-shadow: none;" onclick="location.href='/login'">Login</button>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="hero-content">
+                <div class="badge reveal stagger-1">AI-Powered HR Platform — Now Live</div>
+                <h1 class="headline reveal stagger-2">Welcome to hrms.ai — Your Workforce, Reimagined</h1>
+                <p class="subtitle reveal stagger-3">The cinematic HR ecosystem leveraging Gemini AI for autonomous screening, real-time analytics, and workforce intelligence.</p>
+                <div class="hero-btns reveal stagger-4">
+                    <button class="btn btn-primary" onclick="location.href='{% if session.get('user_id') %}/dashboard{% else %}/signup{% endif %}'">Start Free Trial</button>
+
+                </div>
+            </div>
+
+            <!-- Floating Status Cards -->
+            <div class="floating-cards">
+                <div class="f-card reveal stagger-5 floating-1">
+                    <div class="f-icon success"><i class="fa-solid fa-circle-check"></i></div>
+                    <div class="f-info">
+                        <h5>A.I. Analysis</h5>
+                        <p>Complete (98% Match)</p>
+                    </div>
+                </div>
+                <div class="f-card reveal stagger-6 floating-2">
+                    <div class="f-icon primary"><i class="fa-solid fa-brain"></i></div>
+                    <div class="f-info">
+                        <h5>Skills Score</h5>
+                        <p>GenAI Parsing Live</p>
+                    </div>
+                </div>
+                <div class="f-card reveal stagger-7 floating-3">
+                    <div class="f-icon info"><i class="fa-solid fa-bolt"></i></div>
+                    <div class="f-info">
+                        <h5>Hiring Speed</h5>
+                        <p>3x Improvement</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="canvas-scene">
+            <div class="canvas-container reveal stagger-1">
+                <canvas id="heroCanvas"></canvas>
+            </div>
+        </section>
+
+        <section class="stats">
+            <div class="stat-item reveal stagger-1">
+                <h4>12k+</h4>
+                <p>HR Managers</p>
+            </div>
+            <div class="stat-item reveal stagger-2">
+                <h4>98%</h4>
+                <p>Satisfaction</p>
+            </div>
+            <div class="stat-item reveal stagger-3">
+                <h4>3x</h4>
+                <p>Faster Hiring</p>
+            </div>
+            <div class="stat-item reveal stagger-4">
+                <h4>50+</h4>
+                <p>Integrations</p>
+            </div>
+        </section>
+
+        <section class="features" id="features">
+            <h2 class="section-title reveal">Production-Grade Intelligence</h2>
+            <div class="features-grid">
+                <div class="feature-card reveal stagger-1">
+                    <div class="f-canvas-container">
+                        <canvas id="featureCanvas1"></canvas>
+                    </div>
+                    <h3>AI Resume Parsing</h3>
+                    <p>Proprietary neural extraction for autonomous candidate scoring and matching.</p>
+                </div>
+                <div class="feature-card reveal stagger-2">
+                    <div class="f-canvas-container">
+                        <canvas id="featureCanvas2"></canvas>
+                    </div>
+                    <h3>Smart ATS</h3>
+                    <p>Live pipeline visualizers and intelligent ranking for modern hiring teams.</p>
+                </div>
+                <div class="feature-card reveal stagger-3">
+                    <div class="f-canvas-container">
+                        <canvas id="featureCanvas3"></canvas>
+                    </div>
+                    <h3>Live Analytics</h3>
+                    <p>Data-driven workforce planning with predictive hiring trend analysis.</p>
+                </div>
+                <div class="feature-card reveal stagger-4">
+                    <div class="f-canvas-container">
+                        <canvas id="featureCanvas4"></canvas>
+                    </div>
+                    <h3>Global Sync</h3>
+                    <p>Enterprise-ready integrations with Slack, Workday, and Google Workspace.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="pipeline-section reveal" id="how-it-works">
+            <h2 class="section-title">How it works</h2>
+            <div class="pipeline-container">
+                <canvas id="pipelineCanvas"></canvas>
+                <div class="pipeline-steps">
+                    <div class="step reveal stagger-1"><h3>1</h3><p>Upload</p></div>
+                    <div class="step reveal stagger-2"><h3>2</h3><p>Analyze</p></div>
+                    <div class="step reveal stagger-3"><h3>3</h3><p>Match</p></div>
+                    <div class="step reveal stagger-4"><h3>4</h3><p>Hire</p></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="testimonials" id="testimonials">
+            <h2 class="section-title reveal">Chosen by the Best</h2>
+            <div class="testimonials-grid">
+                <div class="t-card reveal stagger-1">
+                    <p>"The AI scoring changed our hiring process overnight. Stunning accuracy."</p>
+                    <div class="t-user">
+                        <span>JD</span>
+                        <div>
+                            <h5>James Denton</h5>
+                            <p>Head of Talent, SpaceX</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="t-card reveal stagger-2">
+                    <p>"The visual interface is years ahead of existing HR tools. Absolutely seamless."</p>
+                    <div class="t-user">
+                        <span>SC</span>
+                        <div>
+                            <h5>Sarah Chen</h5>
+                            <p>VP Operations, Notion</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="t-card reveal stagger-3">
+                    <p>"Speed and intelligence combined. Our recruitment is finally data-driven."</p>
+                    <div class="t-user">
+                        <span>LM</span>
+                        <div>
+                            <h5>Leo Marcus</h5>
+                            <p>CTO, Framer</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="cta-footer">
+            <h2 class="reveal stagger-1">Ready to start the revolution?</h2>
+            <p class="reveal stagger-2">Join 12,000+ teams automating the future of recruitment.</p>
+            <button class="btn btn-primary reveal stagger-3" style="padding: 1.25rem 3.5rem; font-size: 1.125rem;" onclick="location.href='{% if session.get('user_id') %}/dashboard{% else %}/signup{% endif %}'">Get Started Now</button>
+            <p class="copyright reveal stagger-4">© 2026 hrms.ai. All rights reserved.</p>
+        </section>
+    </main>
+
+    <!-- Interactions JS -->
+    <script src="/static/js/landing.js"></script>
+</body>
+</html>

@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - HRMS.ai</title>
+    <!-- Modern Web Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Local CSS -->
+    <link rel="stylesheet" href="/static/css/style.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="logo-area">
+                <div class="logo-icon">
+                    <i class="fa-solid fa-layer-group"></i>
+                </div>
+                <h2>HRMS<span>.ai</span></h2>
+            </div>
+            
+            <nav class="nav-menu">
+                <a href="/dashboard" class="active"><i class="fa-solid fa-chart-pie"></i> <span>Dashboard</span></a>
+                <a href="/analyze"><i class="fa-solid fa-microchip"></i> <span>Analyze Resumes</span></a>
+                <a href="/candidates"><i class="fa-solid fa-users"></i> <span>Candidates</span></a>
+                <a href="/jobs"><i class="fa-solid fa-briefcase"></i> <span>Job Openings</span></a>
+                <a href="/settings"><i class="fa-solid fa-cog"></i> <span>Settings</span></a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="user-profile" style="position: relative; display: flex; align-items: center; justify-content: space-between; overflow: hidden; gap: 0.5rem; padding: 0.75rem;">
+                    <div style="display: flex; align-items: center; gap: 0.75rem; flex: 1; min-width: 0;">
+                        <img src="https://ui-avatars.com/api/?name={{ session.get('username', 'HR Admin') | urlencode }}&background=6366f1&color=fff" alt="User Profile" style="width: 36px; height: 36px; flex-shrink: 0;">
+                        <div class="user-info" style="min-width: 0; overflow: hidden;">
+                            <h4 style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 0.85rem;">{{ session.get('username', 'HR Admin') }}</h4>
+                            <p style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 0.75rem;">{{ session.get('email', 'admin@hrms.ai') }}</p>
+                        </div>
+                    </div>
+                    <a href="/logout" title="Log Out" style="color: var(--text-muted); transition: color 0.2s; display: flex; align-items: center; justify-content: center; text-decoration: none; flex-shrink: 0; padding: 4px;">
+                        <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                    </a>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Wrapper -->
+        <div class="main-wrapper" id="mainWrapper">
+            <!-- Top Navigation -->
+            <nav class="top-nav">
+                <div class="nav-left">
+                    <button class="icon-btn" id="sidebarToggle">
+                        <i class="fa-solid fa-bars-staggered"></i>
+                    </button>
+                </div>
+                
+                <div class="search-container">
+                    <div class="search-bar" id="globalSearchBar">
+                        <i class="fa-solid fa-search"></i>
+                        <i class="fa-solid fa-circle-notch fa-spin loading-spinner"></i>
+                        <input type="text" id="globalSearchInput" placeholder="Search candidates, jobs...">
+                    </div>
+                    <div class="search-results-dropdown" id="searchResults">
+                        <!-- Results will be injected here -->
+                    </div>
+                </div>
+                
+                <div class="nav-actions">
+                    <button class="icon-btn">
+                        <i class="fa-solid fa-bell"></i>
+                        <span class="notification-dot"></span>
+                    </button>
+                    <button class="icon-btn" id="themeToggle" title="Toggle Theme">
+                        <i class="fa-solid fa-moon"></i>
+                    </button>
+                    <button class="btn btn-primary" onclick="location.href='/analyze'">
+                        <i class="fa-solid fa-plus"></i> New Analysis
+                    </button>
+                </div>
+            </nav>
+
+            <!-- Main Content Area -->
+            <main class="main-content">
+                <header class="page-header animate-fade-in">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom: 2rem;">
+                        <div class="header-content">
+                            <h1 style="font-family: var(--font-heading); font-size: 2rem; font-weight: 700;">Recruitment Overview</h1>
+                            <p style="color: var(--text-muted);">Welcome back! Here's what's happening with your candidates today.</p>
+                        </div>
+                        <div class="header-filter" style="min-width: 240px;">
+                            <label style="display:block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.5rem; letter-spacing: 0.05em;">Filter by Job Role</label>
+                            <select id="dashboardJobFilter" style="width:100%; padding:0.75rem; border:1px solid var(--border); border-radius:12px; outline:none; background-color:white; font-family:inherit; font-weight:500;">
+                                <option value="all">All Job Roles</option>
+                            </select>
+                        </div>
+                    </div>
+                </header>
+
+                <!-- KPI Cards -->
+                <div class="dashboard-grid animate-fade-in" style="animation-delay: 0.1s;">
+                    <div class="kpi-card">
+                        <div class="kpi-icon primary">
+                            <i class="fa-solid fa-users"></i>
+                        </div>
+                        <div class="kpi-data">
+                            <h3>Total Candidates</h3>
+                            <div class="kpi-value" id="statTotal">0</div>
+                            <span class="kpi-trend up"><i class="fa-solid fa-arrow-up"></i> 12%</span>
+                        </div>
+                    </div>
+                    
+                    <div class="kpi-card">
+                        <div class="kpi-icon success">
+                            <i class="fa-solid fa-star"></i>
+                        </div>
+                        <div class="kpi-data">
+                            <h3>Avg. Match Score</h3>
+                            <div class="kpi-value" id="statAvgScore">0%</div>
+                            <span class="kpi-trend up"><i class="fa-solid fa-arrow-up"></i> 5.4%</span>
+                        </div>
+                    </div>
+                    
+                    <div class="kpi-card">
+                        <div class="kpi-icon warning">
+                            <i class="fa-solid fa-user-check"></i>
+                        </div>
+                        <div class="kpi-data">
+                            <h3>Strong Matches</h3>
+                            <div class="kpi-value" id="statStrongMatches">0</div>
+                            <span class="kpi-trend up"><i class="fa-solid fa-arrow-up"></i> 8%</span>
+                        </div>
+                    </div>
+                    
+                    <div class="kpi-card">
+                        <div class="kpi-icon info">
+                            <i class="fa-solid fa-clock-rotate-left"></i>
+                        </div>
+                        <div class="kpi-data">
+                            <h3>To Review</h3>
+                            <div class="kpi-value">14</div>
+                            <span class="kpi-trend down"><i class="fa-solid fa-arrow-down"></i> 2%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Visualizations -->
+                <div class="viz-grid animate-fade-in" style="animation-delay: 0.2s;">
+                    <div class="viz-card">
+                        <div class="viz-card-header">
+                            <h3>Score Distribution</h3>
+                            <div class="actions">
+                                <button class="btn btn-secondary btn-icon"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+                            </div>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="scoreChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="viz-card">
+                        <div class="viz-card-header">
+                            <h3>Recommendation Split</h3>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="splitChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Candidates Table -->
+                <div class="table-card animate-fade-in" style="animation-delay: 0.3s;">
+                    <div class="table-header">
+                        <h3>Recently Analyzed</h3>
+                        <a href="/candidates" class="btn btn-secondary btn-sm">View All</a>
+                    </div>
+                    <div class="table-container">
+                        <table class="modern-table">
+                            <thead>
+                                <tr>
+                                    <th>Candidate</th>
+                                    <th>Overall Score</th>
+                                    <th>Recommendation</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recentCandidatesBody">
+                                <tr>
+                                    <td colspan="4" style="text-align: center; padding: 3rem; color: var(--text-muted);">
+                                        <i class="fa-solid fa-circle-notch fa-spin"></i> Loading recent data...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Mobile Overlay -->
+    <div class="mobile-overlay" id="mobileOverlay"></div>
+
+    <script src="/static/js/main.js"></script>
+</body>
+</html>

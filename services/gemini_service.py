@@ -17,7 +17,7 @@ def analyze_resume_with_gemini(resume_text, job_description):
         setup_gemini()
         
         # Try to use generation_config to force JSON response
-        model = genai.GenerativeModel("gemini-2.5-flash", 
+        model = genai.GenerativeModel("gemini-3-flash-preview", 
                                       generation_config={"response_mime_type": "application/json"})
         
         prompt = f'''

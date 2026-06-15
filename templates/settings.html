@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - HRMS.ai</title>
+    <!-- Modern Web Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Local CSS -->
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="logo-area">
+                <div class="logo-icon">
+                    <i class="fa-solid fa-layer-group"></i>
+                </div>
+                <h2>HRMS<span>.ai</span></h2>
+            </div>
+            
+            <nav class="nav-menu">
+                <a href="/dashboard"><i class="fa-solid fa-chart-pie"></i> <span>Dashboard</span></a>
+                <a href="/analyze"><i class="fa-solid fa-microchip"></i> <span>Analyze Resumes</span></a>
+                <a href="/candidates"><i class="fa-solid fa-users"></i> <span>Candidates</span></a>
+                <a href="/jobs"><i class="fa-solid fa-briefcase"></i> <span>Job Openings</span></a>
+                <a href="/settings" class="active"><i class="fa-solid fa-cog"></i> <span>Settings</span></a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="user-profile" style="position: relative; display: flex; align-items: center; justify-content: space-between; overflow: hidden; gap: 0.5rem; padding: 0.75rem;">
+                    <div style="display: flex; align-items: center; gap: 0.75rem; flex: 1; min-width: 0;">
+                        <img src="https://ui-avatars.com/api/?name={{ session.get('username', 'HR Admin') | urlencode }}&background=6366f1&color=fff" alt="User Profile" style="width: 36px; height: 36px; flex-shrink: 0;">
+                        <div class="user-info" style="min-width: 0; overflow: hidden;">
+                            <h4 style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 0.85rem;">{{ session.get('username', 'HR Admin') }}</h4>
+                            <p style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 0.75rem;">{{ session.get('email', 'admin@hrms.ai') }}</p>
+                        </div>
+                    </div>
+                    <a href="/logout" title="Log Out" style="color: var(--text-muted); transition: color 0.2s; display: flex; align-items: center; justify-content: center; text-decoration: none; flex-shrink: 0; padding: 4px;">
+                        <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                    </a>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Wrapper -->
+        <div class="main-wrapper" id="mainWrapper">
+            <!-- Top Navigation -->
+            <nav class="top-nav">
+                <div class="nav-left">
+                    <button class="icon-btn" id="sidebarToggle">
+                        <i class="fa-solid fa-bars-staggered"></i>
+                    </button>
+                </div>
+                
+                <div class="search-container">
+                    <div class="search-bar">
+                        <i class="fa-solid fa-search"></i>
+                        <input type="text" placeholder="Search preferences...">
+                    </div>
+                </div>
+                
+                <div class="nav-actions">
+                    <button class="icon-btn" id="themeToggle" title="Toggle Theme">
+                        <i class="fa-solid fa-moon"></i>
+                    </button>
+                </div>
+            </nav>
+
+            <!-- Main Content Area -->
+            <main class="main-content">
+                <header class="page-header animate-fade-in">
+                    <h1 style="font-family: var(--font-heading); font-size: 2rem; font-weight: 700;">Settings</h1>
+                    <p style="color: var(--text-muted);">Manage your account preferences and integration settings.</p>
+                </header>
+
+                <div class="settings-grid animate-fade-in" style="animation-delay: 0.1s; margin-top: 2rem;">
+                    <!-- Email Settings Card -->
+                    <div class="card" style="padding: 2rem; max-width: 800px;">
+                        <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem;">
+                            <div style="background: rgba(99, 102, 241, 0.1); color: var(--primary); width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
+                                <i class="fa-solid fa-envelope"></i>
+                            </div>
+                            <div>
+                                <h3 style="font-size: 1.25rem; font-weight: 600;">Email Communications</h3>
+                                <p style="color: var(--text-muted); font-size: 0.9rem;">Configure how you want to reach out to candidates.</p>
+                            </div>
+                        </div>
+
+                        <div class="settings-group" style="margin-bottom: 2rem; border-bottom: 1px solid var(--border); padding-bottom: 2rem;">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    <h4 style="font-weight: 600; margin-bottom: 0.25rem;">Enable Email Sending</h4>
+                                    <p style="color: var(--text-muted); font-size: 0.85rem;">Allow sending emails to candidates directly from the dashboard.</p>
+                                </div>
+                                <label class="switch" style="position: relative; display: inline-block; width: 50px; height: 26px;">
+                                    <input type="checkbox" id="emailEnabledToggle" checked>
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div id="emailProviderSection" style="margin-bottom: 2.5rem;">
+                            <h4 style="font-weight: 600; margin-bottom: 1rem;">Default Email Provider</h4>
+                            <div class="form-group" style="margin-bottom: 1.5rem;">
+                                <select id="emailProviderSelect" style="width:100%; padding:0.75rem; border:1px solid var(--border); border-radius:12px; outline:none; background-color:white; font-family:inherit; font-weight:500; cursor: pointer;">
+                                    <option value="native">Native System App (Mailto:)</option>
+                                    <option value="gmail">Gmail Web Interface</option>
+                                    <option value="outlook">Outlook / Hotmail Web Interface</option>
+                                </select>
+                            </div>
+
+                            <div id="senderEmailSection" style="margin-bottom: 1.5rem; display: none;">
+                                <label style="display:block; font-weight:600; margin-bottom:0.5rem; color: var(--text-muted); font-size: 0.8rem;">Sender Email (Optional)</label>
+                                <input type="email" id="senderEmailInput" placeholder="e.g. work@gmail.com" style="width:100%; padding:0.75rem; border:1px solid var(--border); border-radius:12px; outline:none; background-color:white; font-family:inherit;">
+                                <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.5rem;">If you use multiple accounts, this helps Gmail/Outlook open the correct one.</p>
+                            </div>
+
+                            <div id="providerInfo" style="background: rgba(0,0,0,0.03); padding: 1.25rem; border-radius: 12px; border: 1px dashed var(--border);">
+                                <div id="infoNative">
+                                    <p style="font-size: 0.9rem; color: var(--text-muted); line-height: 1.5;">
+                                        <i class="fa-solid fa-circle-info" style="color: var(--primary); margin-right: 0.5rem;"></i>
+                                        Opening your <strong>default system mail app</strong> (like Outlook Desktop or Apple Mail). Works instantly without any account verification.
+                                    </p>
+                                </div>
+                                <div id="infoGmail" style="display: none;">
+                                    <p style="font-size: 0.9rem; color: var(--text-muted); line-height: 1.5;">
+                                        <i class="fa-brands fa-google" style="color: #DB4437; margin-right: 0.5rem;"></i>
+                                        Clicking send will launch <strong>mail.google.com</strong> in a new browser tab with your candidate's info pre-filled.
+                                    </p>
+                                </div>
+                                <div id="infoOutlook" style="display: none;">
+                                    <p style="font-size: 0.9rem; color: var(--text-muted); line-height: 1.5;">
+                                        <i class="fa-brands fa-microsoft" style="color: #0078D4; margin-right: 0.5rem;"></i>
+                                        Clicking send will launch <strong>outlook.live.com</strong> in a new browser tab for personal or business accounts.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button class="btn btn-primary" id="saveSettingsBtn" style="width: 100%; padding: 1rem; font-weight: 600; border-radius: 12px; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                            <i class="fa-solid fa-save"></i> Save Changes
+                        </button>
+                        <div id="settingsFeedback" style="margin-top: 1rem; padding: 0.75rem; border-radius: 8px; text-align: center; display: none; font-size: 0.9rem; font-weight: 500;"></div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Switch Styling (Temp Inline for prompt) -->
+    <style>
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--primary); }
+        input:checked + .slider:before { transform: translateX(24px); }
+        .card { background: white; border-radius: 20px; border: 1px solid var(--border); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+    </style>
+
+    <script src="/static/js/main.js"></script>
+</body>
+</html>

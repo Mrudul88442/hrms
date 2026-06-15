@@ -6,3 +6,7 @@ __pycache__/
 venv/
 env/
 .venv/
+uploads/
+# Personal documentation
+docs/
+project_walkthrough.md

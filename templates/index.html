@@ -16,103 +16,172 @@
 <body>
     <div class="app-container">
         <!-- Sidebar -->
-        <aside class="sidebar">
+        <aside class="sidebar" id="sidebar">
             <div class="logo-area">
-                <i class="fa-solid fa-layer-group"></i>
+                <div class="logo-icon">
+                    <i class="fa-solid fa-layer-group"></i>
+                </div>
                 <h2>HRMS<span>.ai</span></h2>
             </div>
+            
             <nav class="nav-menu">
-                <a href="/" class="active"><i class="fa-solid fa-chart-pie"></i> Dashboard</a>
-                <a href="/candidates"><i class="fa-solid fa-users"></i> Candidates</a>
-                <a href="#"><i class="fa-solid fa-briefcase"></i> Jobs</a>
-                <a href="#"><i class="fa-solid fa-cog"></i> Settings</a>
+                <a href="/dashboard"><i class="fa-solid fa-chart-pie"></i> <span>Dashboard</span></a>
+                <a href="/analyze" class="active"><i class="fa-solid fa-microchip"></i> <span>Analyze Resumes</span></a>
+                <a href="/candidates"><i class="fa-solid fa-users"></i> <span>Candidates</span></a>
+                <a href="/jobs"><i class="fa-solid fa-briefcase"></i> <span>Job Openings</span></a>
+                <a href="/settings"><i class="fa-solid fa-cog"></i> <span>Settings</span></a>
             </nav>
-            <div class="user-profile">
-                <img src="https://ui-avatars.com/api/?name=HR+Admin&background=0D8ABC&color=fff" alt="User Profile">
-                <div class="user-info">
-                    <h4>HR Admin</h4>
-                    <p>admin@hrms.ai</p>
+
+            <div class="sidebar-footer">
+                <div class="user-profile" style="position: relative; display: flex; align-items: center; justify-content: space-between; overflow: hidden; gap: 0.5rem; padding: 0.75rem;">
+                    <div style="display: flex; align-items: center; gap: 0.75rem; flex: 1; min-width: 0;">
+                        <img src="https://ui-avatars.com/api/?name={{ session.get('username', 'HR Admin') | urlencode }}&background=6366f1&color=fff" alt="User Profile" style="width: 36px; height: 36px; flex-shrink: 0;">
+                        <div class="user-info" style="min-width: 0; overflow: hidden;">
+                            <h4 style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 0.85rem;">{{ session.get('username', 'HR Admin') }}</h4>
+                            <p style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 0.75rem;">{{ session.get('email', 'admin@hrms.ai') }}</p>
+                        </div>
+                    </div>
+                    <a href="/logout" title="Log Out" style="color: var(--text-muted); transition: color 0.2s; display: flex; align-items: center; justify-content: center; text-decoration: none; flex-shrink: 0; padding: 4px;">
+                        <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                    </a>
                 </div>
             </div>
         </aside>
 
-        <!-- Main Content -->
-        <main class="main-content">
-            <header class="top-header">
-                <div class="header-title">
-                    <h1>AI Resume Screening</h1>
-                    <p>Leverage Gemini AI to find the perfect candidate match automatically.</p>
+        <!-- Main Content Wrapper -->
+        <div class="main-wrapper" id="mainWrapper">
+            <!-- Top Navigation -->
+            <nav class="top-nav">
+                <div class="nav-left">
+                    <button class="icon-btn" id="sidebarToggle">
+                        <i class="fa-solid fa-bars-staggered"></i>
+                    </button>
                 </div>
-                <div class="header-actions">
-                    <button class="btn btn-outline"><i class="fa-solid fa-bell"></i></button>
+                
+                <div class="search-container">
+                    <div class="search-bar">
+                        <i class="fa-solid fa-search"></i>
+                        <input type="text" placeholder="Search...">
+                    </div>
                 </div>
-            </header>
+                
+                <div class="nav-actions">
+                    <button class="icon-btn">
+                        <i class="fa-solid fa-bell"></i>
+                    </button>
+                    <button class="icon-btn" id="themeToggle" title="Toggle Theme">
+                        <i class="fa-solid fa-moon"></i>
+                    </button>
+                    <button class="btn btn-secondary" onclick="location.href='/'">
+                        Back to Dashboard
+                    </button>
+                </div>
+            </nav>
 
-            <div class="content-grid">
-                <!-- Data Entry Section -->
-                <div class="input-section card">
-                    <h3><i class="fa-solid fa-pen-to-square"></i> Create New Scoring Job</h3>
-                    
-                    <div class="form-group">
-                        <label for="jobDescription">Job Description (JD)</label>
-                        <textarea id="jobDescription" placeholder="Paste the full job description here, including responsibilities, required skills, and qualifications..." rows="6"></textarea>
+            <!-- Main Content Area -->
+            <main class="main-content">
+                <header class="page-header animate-fade-in">
+                    <h1 style="font-family: var(--font-heading); font-size: 1.875rem; font-weight: 700; margin-bottom: 0.25rem;">AI Resume Screening</h1>
+                    <p style="color: var(--text-muted); margin-bottom: 2rem;">Leverage Gemini AI to find the perfect candidate match automatically.</p>
+                </header>
+
+                <div class="dashboard-grid animate-fade-in" style="grid-template-columns: 1fr 2fr;">
+                    <!-- Data Entry Section -->
+                    <div class="viz-card">
+                        <div class="form-group" style="margin-bottom: 1.5rem;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+                                <label style="font-weight:600; font-size:0.875rem;">Select Job Role</label>
+                                <button type="button" id="addNewJobBtn" class="btn-text" style="color:var(--primary); background:none; border:none; font-weight:600; cursor:pointer;"><i class="fa-solid fa-plus"></i> Add New Job</button>
+                            </div>
+                            <select id="jobSelect" style="width:100%; padding:0.75rem; border:1px solid var(--border); border-radius:12px; outline:none; background-color:white;">
+                                <option value="new">-- Create New / External --</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group" style="margin-bottom: 1.5rem;" id="jdContainer">
+                            <label style="display:block; font-weight:600; margin-bottom:0.5rem; font-size:0.875rem;">Job Description (JD)</label>
+                            <textarea id="jobDescription" placeholder="Paste the full job description here..." rows="8" style="width:100%; padding:1rem; border:1px solid var(--border); border-radius:12px; font-family:inherit; resize:vertical; outline:none; transition:all 0.2s;"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label style="display:block; font-weight:600; margin-bottom:0.5rem; font-size:0.875rem;">Upload Resumes (PDF / DOCX)</label>
+                            <div class="upload-card" id="dropZone">
+                                <input type="file" id="fileInput" multiple accept=".pdf,.doc,.docx" hidden>
+                                <i class="fa-solid fa-cloud-arrow-up cloud-icon"></i>
+                                <h4 style="margin-bottom:0.5rem;">Drag & Drop Resumes</h4>
+                                <p style="font-size:0.875rem; color:var(--text-muted);">or <button type="button" class="btn-text" id="browseBtn" style="background:none; border:none; color:var(--primary); font-weight:600; cursor:pointer; text-decoration:underline;">browse files</button></p>
+                                <div class="file-list" id="fileList" style="margin-top:1rem; text-align:left;"></div>
+                            </div>
+                        </div>
+
+                        <button class="btn btn-primary" id="analyzeBtn" style="width:100%; margin-top:2rem; padding:1rem;">
+                            <i class="fa-solid fa-microchip"></i> Start AI Analysis
+                        </button>
+                        <div id="errorMessage" class="error-msg hidden"></div>
                     </div>
 
-                    <div class="form-group">
-                        <label>Upload Resumes (PDF / DOCX)</label>
-                        <div class="upload-zone" id="dropZone">
-                            <input type="file" id="fileInput" multiple accept=".pdf,.doc,.docx" hidden>
-                            <i class="fa-solid fa-cloud-arrow-up cloud-icon"></i>
-                            <h4>Drag & Drop Resumes Here</h4>
-                            <p>or <button type="button" class="btn-text" id="browseBtn">browse files</button> from your computer</p>
-                            <div class="file-list" id="fileList"></div>
+                    <!-- Results Section -->
+                    <div class="table-card">
+                        <div class="table-header">
+                            <h3><i class="fa-solid fa-ranking-star"></i> Candidate Rankings</h3>
+                            <button class="btn btn-secondary btn-sm" id="exportBtn" disabled>
+                                <i class="fa-solid fa-download"></i> Export
+                            </button>
+                        </div>
+
+                        <div class="table-container">
+                            <table class="modern-table" id="resultsTable">
+                                <thead>
+                                    <tr>
+                                        <th>Rank</th>
+                                        <th>Candidate</th>
+                                        <th>Skills Match</th>
+                                        <th>Overall Score</th>
+                                        <th>Recommendation</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="resultsTableBody">
+                                    <tr class="empty-state">
+                                        <td colspan="6" style="text-align:center; padding: 5rem;">
+                                            <div class="empty-content" style="color:var(--text-muted);">
+                                                <i class="fa-regular fa-folder-open" style="font-size:3rem; margin-bottom:1rem;"></i>
+                                                <p>No candidates analyzed yet. Upload resumes and run the analysis.</p>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
-
-                    <button class="btn btn-primary btn-block" id="analyzeBtn">
-                        <i class="fa-solid fa-microchip"></i> Start AI Analysis
-                    </button>
-                    <!-- Global Error Container -->
-                    <div id="errorMessage" class="error-msg hidden"></div>
                 </div>
+            </main>
+        </div>
+    </div>
 
-                <!-- Results Section -->
-                <div class="results-section card">
-                    <div class="results-header">
-                        <h3><i class="fa-solid fa-ranking-star"></i> Candidate Rankings</h3>
-                        <button class="btn btn-secondary btn-sm" id="exportBtn" disabled>
-                            <i class="fa-solid fa-download"></i> Export CSV
-                        </button>
-                    </div>
-
-                    <div class="table-container">
-                        <table class="candidates-table" id="resultsTable">
-                            <thead>
-                                <tr>
-                                    <th>Rank</th>
-                                    <th>Candidate</th>
-                                    <th>Skills Match</th>
-                                    <th>Overall Score</th>
-                                    <th>Recommendation</th>
-                                    <th>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody id="resultsTableBody">
-                                <!-- Empty state -->
-                                <tr class="empty-state">
-                                    <td colspan="6">
-                                        <div class="empty-content">
-                                            <i class="fa-regular fa-folder-open"></i>
-                                            <p>No candidates analyzed yet. Upload resumes and run the analysis.</p>
-                                        </div>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
+    <!-- Create Job Modal -->
+    <div class="modal hidden" id="jobModal">
+        <div class="modal-overlay" id="jobModalOverlay"></div>
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header">
+                <h2>Create New Job Role</h2>
+                <button class="close-btn" id="closeJobModal"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group" style="margin-bottom: 1rem;">
+                    <label style="display:block; font-weight:600; margin-bottom:0.5rem;">Job Title</label>
+                    <input type="text" id="newJobTitle" placeholder="e.g. Senior Frontend Developer" style="width:100%; padding:0.75rem; border:1px solid var(--border); border-radius:10px; outline:none;">
+                </div>
+                <div class="form-group" style="margin-bottom: 1rem;">
+                    <label style="display:block; font-weight:600; margin-bottom:0.5rem;">Description / Requirements</label>
+                    <textarea id="newJobDescription" placeholder="Detailed job requirements..." rows="6" style="width:100%; padding:0.75rem; border:1px solid var(--border); border-radius:10px; outline:none; resize:vertical;"></textarea>
                 </div>
             </div>
-        </main>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancelJobBtn">Cancel</button>
+                <button class="btn btn-primary" id="saveJobBtn">Create Job</button>
+            </div>
+        </div>
     </div>
 
     <!-- Candidate Details Modal -->

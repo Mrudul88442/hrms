@@ -16,46 +16,106 @@
 <body>
     <div class="app-container">
         <!-- Sidebar -->
-        <aside class="sidebar">
+        <aside class="sidebar" id="sidebar">
             <div class="logo-area">
-                <i class="fa-solid fa-layer-group"></i>
+                <div class="logo-icon">
+                    <i class="fa-solid fa-layer-group"></i>
+                </div>
                 <h2>HRMS<span>.ai</span></h2>
             </div>
+            
             <nav class="nav-menu">
-                <a href="/"><i class="fa-solid fa-chart-pie"></i> Dashboard</a>
-                <a href="/candidates" class="active"><i class="fa-solid fa-users"></i> Candidates</a>
-                <a href="#"><i class="fa-solid fa-briefcase"></i> Jobs</a>
-                <a href="#"><i class="fa-solid fa-cog"></i> Settings</a>
+                <a href="/dashboard"><i class="fa-solid fa-chart-pie"></i> <span>Dashboard</span></a>
+                <a href="/analyze"><i class="fa-solid fa-microchip"></i> <span>Analyze Resumes</span></a>
+                <a href="/candidates" class="active"><i class="fa-solid fa-users"></i> <span>Candidates</span></a>
+                <a href="/jobs"><i class="fa-solid fa-briefcase"></i> <span>Job Openings</span></a>
+                <a href="/settings"><i class="fa-solid fa-cog"></i> <span>Settings</span></a>
             </nav>
-            <div class="user-profile">
-                <img src="https://ui-avatars.com/api/?name=HR+Admin&background=0D8ABC&color=fff" alt="User Profile">
-                <div class="user-info">
-                    <h4>HR Admin</h4>
-                    <p>admin@hrms.ai</p>
+
+            <div class="sidebar-footer">
+                <div class="user-profile" style="position: relative; display: flex; align-items: center; justify-content: space-between; overflow: hidden; gap: 0.5rem; padding: 0.75rem;">
+                    <div style="display: flex; align-items: center; gap: 0.75rem; flex: 1; min-width: 0;">
+                        <img src="https://ui-avatars.com/api/?name={{ session.get('username', 'HR Admin') | urlencode }}&background=6366f1&color=fff" alt="User Profile" style="width: 36px; height: 36px; flex-shrink: 0;">
+                        <div class="user-info" style="min-width: 0; overflow: hidden;">
+                            <h4 style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 0.85rem;">{{ session.get('username', 'HR Admin') }}</h4>
+                            <p style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 0.75rem;">{{ session.get('email', 'admin@hrms.ai') }}</p>
+                        </div>
+                    </div>
+                    <a href="/logout" title="Log Out" style="color: var(--text-muted); transition: color 0.2s; display: flex; align-items: center; justify-content: center; text-decoration: none; flex-shrink: 0; padding: 4px;">
+                        <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                    </a>
                 </div>
             </div>
         </aside>
 
-        <!-- Main Content -->
-        <main class="main-content">
-            <header class="top-header">
-                <div class="header-title">
-                    <h1>Analyzed Candidates</h1>
-                    <p>Review the historical list of all candidates processed by the system.</p>
+        <!-- Main Content Wrapper -->
+        <div class="main-wrapper" id="mainWrapper">
+            <!-- Top Navigation -->
+            <nav class="top-nav">
+                <div class="nav-left">
+                    <button class="icon-btn" id="sidebarToggle">
+                        <i class="fa-solid fa-bars-staggered"></i>
+                    </button>
                 </div>
-                <div class="header-actions">
-                    <button class="btn btn-outline"><i class="fa-solid fa-bell"></i></button>
+                
+                <div class="search-container">
+                    <div class="search-bar" id="globalSearchBar">
+                        <i class="fa-solid fa-search"></i>
+                        <i class="fa-solid fa-circle-notch fa-spin loading-spinner"></i>
+                        <input type="text" id="globalSearchInput" placeholder="Search candidates, jobs...">
+                    </div>
+                    <div class="search-results-dropdown" id="searchResults">
+                        <!-- Results will be injected here -->
+                    </div>
                 </div>
-            </header>
+                
+                <div class="nav-actions">
+                    <button class="icon-btn" id="themeToggle" title="Toggle Theme">
+                        <i class="fa-solid fa-moon"></i>
+                    </button>
+                    <div class="icon-btn">
+                        <i class="fa-solid fa-bell"></i>
+                    </div>
+                    <button class="btn btn-primary" onclick="location.href='/analyze'">
+                        Analyze New
+                    </button>
+                </div>
+            </nav>
 
-            <div class="content-grid" style="grid-template-columns: 1fr;">
-                <div class="card" style="margin-top: 20px;">
-                    <div class="results-header">
-                        <h3><i class="fa-solid fa-users"></i> All Analyzed Candidates</h3>
+            <!-- Main Content Area -->
+            <main class="main-content">
+                <header class="page-header animate-fade-in">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-end;">
+                        <div>
+                            <h1 style="font-family: var(--font-heading); font-size: 1.875rem; font-weight: 700;">Analyzed Candidates</h1>
+                            <p style="color: var(--text-muted); margin-bottom: 2rem;">Review the historical list of all candidates processed by the system.</p>
+                        </div>
+                        <div class="header-filter" style="min-width: 240px; margin-bottom: 2rem; display: flex; gap: 1rem;">
+                            <div style="flex: 1;">
+                                <label style="display:block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.5rem; letter-spacing: 0.05em;">Filter by Job Role</label>
+                                <select id="candidatesJobFilter" style="width:100%; padding:0.75rem; border:1px solid var(--border); border-radius:12px; outline:none; background-color:white; font-family:inherit; font-weight:500;">
+                                    <option value="all">All Job Roles</option>
+                                </select>
+                            </div>
+                            <div style="flex: 1;">
+                                <label style="display:block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.5rem; letter-spacing: 0.05em;">Sort By</label>
+                                <select id="candidatesSortFilter" style="width:100%; padding:0.75rem; border:1px solid var(--border); border-radius:12px; outline:none; background-color:white; font-family:inherit; font-weight:500;">
+                                    <option value="score_desc">Overall Score (High-Low)</option>
+                                    <option value="score_asc">Overall Score (Low-High)</option>
+                                    <option value="skills_desc">Skills Match (High-Low)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </header>
+
+                <div class="table-card animate-fade-in">
+                    <div class="table-header">
+                        <h3><i class="fa-solid fa-users"></i> All Candidates</h3>
                     </div>
 
                     <div class="table-container">
-                        <table class="candidates-table" id="allCandidatesTable">
+                        <table class="modern-table" id="allCandidatesTable">
                             <thead>
                                 <tr>
                                     <th>Candidate</th>
@@ -67,9 +127,9 @@
                             </thead>
                             <tbody id="allCandidatesTableBody">
                                 <tr class="empty-state">
-                                    <td colspan="5">
-                                        <div class="empty-content">
-                                            <i class="fa-regular fa-folder-open"></i>
+                                    <td colspan="5" style="text-align:center; padding: 5rem;">
+                                        <div class="empty-content" style="color:var(--text-muted);">
+                                            <i class="fa-solid fa-circle-notch fa-spin" style="font-size:2rem; margin-bottom:1rem;"></i>
                                             <p>Loading candidates data...</p>
                                         </div>
                                     </td>
@@ -78,8 +138,8 @@
                         </table>
                     </div>
                 </div>
-            </div>
-        </main>
+            </main>
+        </div>
     </div>
 
     <!-- Candidate Details Modal -->
@@ -148,6 +208,49 @@
         </div>
     </div>
 
-    <script src="/static/js/main.js?v=3"></script>
+    <!-- Email Modal -->
+    <div class="modal hidden" id="emailModal">
+        <div class="modal-overlay" id="emailModalOverlay"></div>
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h2>Send Email to <span id="emailCandidateName">Candidate</span></h2>
+                <button class="close-btn" id="closeEmailModal"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group" style="margin-bottom: 1rem; display: flex; gap: 1rem;">
+                    <div style="flex: 1;">
+                        <label style="display:block; font-weight:600; margin-bottom:0.5rem; color: var(--text-muted); font-size: 0.8rem;">Recipient Email</label>
+                        <input type="text" id="emailRecipient" readonly style="width:100%; padding:0.75rem; border:1px solid var(--border); border-radius:10px; outline:none; background: rgba(0,0,0,0.05); color: var(--text-muted);">
+                    </div>
+                    <div style="flex: 1;">
+                        <label style="display:block; font-weight:600; margin-bottom:0.5rem; color: var(--text-muted); font-size: 0.8rem;">Message Template</label>
+                        <select id="emailTemplate" style="width:100%; padding:0.75rem; border:1px solid var(--border); border-radius:10px; outline:none; background-color:white; font-family:inherit; font-weight:500;">
+                            <option value="custom">Custom Message</option>
+                            <option value="invite">Interview Invitation</option>
+                            <option value="confirmation">Application Received</option>
+                            <option value="rejection">Status Update (Rejection)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group" style="margin-bottom: 1rem;">
+                    <label style="display:block; font-weight:600; margin-bottom:0.5rem; color: var(--text-muted); font-size: 0.8rem;">Subject</label>
+                    <input type="text" id="emailSubject" placeholder="Hiring Update - HRMS.ai" style="width:100%; padding:0.75rem; border:1px solid var(--border); border-radius:10px; outline:none; background: transparent; color: var(--text-main);">
+                </div>
+                <div class="form-group" style="margin-bottom: 1rem;">
+                    <label style="display:block; font-weight:600; margin-bottom:0.5rem; color: var(--text-muted); font-size: 0.8rem;">Message</label>
+                    <textarea id="emailBody" placeholder="Compose your message here..." rows="8" style="width:100%; padding:0.75rem; border:1px solid var(--border); border-radius:10px; outline:none; resize:vertical; background: transparent; color: var(--text-main); font-family: inherit;"></textarea>
+                </div>
+                <div id="emailFeedback" style="display: none; padding: 0.75rem; border-radius: 8px; margin-top: 1rem; font-size: 0.875rem;"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancelEmailBtn">Cancel</button>
+                <button class="btn btn-primary" id="confirmSendEmailBtn">
+                    <i class="fa-solid fa-paper-plane"></i> Send Email
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/main.js?v=4"></script>
 </body>
 </html>
